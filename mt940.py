@@ -1,190 +1,81 @@
+from datetime import datetime
 from data import Transaction
-
-BANK_NAME = 'Revolut'
-BANK_BIC = 'REVOLT21'
-
-DEFAULT_SEQUENCE_NO = 1
-
+from constants import *
 
 class Mt940Writer:
-
     def __init__(self, filename, account_iban, month):
         self.file = open(filename, 'w')
         self.account_iban = account_iban
-
         self._write_header(month)
         self._written_starting_balance = False
         self._written_ending_balance = False
-
         self._balance = None
         self._date = None
-
 
     def __enter__(self):
         return self
 
-
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.release()
 
-
-    def write_transaction(self, transaction : Transaction):
+    def write_transaction(self, transaction: Transaction):
         if not self._written_starting_balance:
-            self._write_starting_balance(transaction.datetime,
-                                         transaction.before_balance)
+            self._write_starting_balance(transaction.datetime, transaction.before_balance)
 
         self.file.writelines([
-            Mt940.make_61(
-                transaction.datetime,
-                transaction.amount),
-            Mt940.make_86(
-                transaction.iban,
-                transaction.name,
-                transaction.description)
+            self._make_61(transaction),
+            self._make_86(transaction)
         ])
 
         self._balance = transaction.after_balance
         self._date = transaction.datetime
 
-
     def release(self):
-        if not self.file.closed \
-           and self._written_starting_balance \
-           and not self._written_ending_balance:
-            self._write_ending_balance()
-
         if not self.file.closed:
+            if self._written_starting_balance and not self._written_ending_balance:
+                self._write_ending_balance()
+            self.file.write('-}')
             self.file.close()
 
-
     def _write_header(self, month):
-        self.file.write(
-            Mt940.make_header(BANK_BIC))
-        self.file.writelines([
-            Mt940.make_20(BANK_NAME, month),
-            Mt940.make_25(self.account_iban, CURRENCY),
-            Mt940.make_28c(DEFAULT_SEQUENCE_NO)
-        ])
-
+        headers = [
+            f"{{1:F01{REVOLUT_BIC}XXX0000000000}}",
+            f"{{2:I{TAG_940}{REVOLUT_BIC}XXXN}}",
+            "{4:",
+            f":{TAG_940}:",
+            f":20:{TAG_940}{REVOLUT_NAME}-{month}",
+            f":25:{self.account_iban} {CURRENCY}",
+            f":28C:{DEFAULT_SEQUENCE_NO}"
+        ]
+        self.file.write('\n'.join(headers) + '\n')
 
     def _write_starting_balance(self, date, balance):
         self.file.write(
-            Mt940.make_60f(date, balance, CURRENCY))
+            f":60F:{self._balance_line(date, balance)}\n"
+        )
         self._written_starting_balance = True
-
 
     def _write_ending_balance(self):
         self.file.write(
-            Mt940.make_62f(self._date, self._balance, CURRENCY))
+            f":62F:{self._balance_line(self._date, self._balance)}\n"
+        )
         self._written_ending_balance = True
 
+    def _make_61(self, transaction: Transaction):
+        date = transaction.datetime.strftime('%y%m%d')
+        entry_date = transaction.datetime.strftime('%m%d')
+        dc_mark = 'D' if transaction.amount < 0 else 'C'
+        amount = f"{abs(transaction.amount):.2f}".replace('.', ',')
+        
+        return f":61:{date}{entry_date}{dc_mark}{amount}{NTRF}NONREF\n"
 
+    def _make_86(self, transaction: Transaction):
+        return (f":86:/IBAN/{transaction.iban or ''}"
+                f"/NAME/{transaction.name or ''}"
+                f"/REMI/{transaction.description or ''}\n")
 
-CURRENCY = 'EUR'
-
-# format identifier
-TAG_940 = '940'
-
-# header
-FORMAT_HEADER = ':' + TAG_940 + ':\n'
-
-# transaction ref
-FORMAT_20 = ':20:' + TAG_940 + '{bank}-{month}\n'
-
-# account id
-FORMAT_25 = ':25:{iban} {currency}\n'
-
-# sequence no
-FORMAT_28C = ':28C:{seqno}\n'
-
-# opening balance
-FORMAT_60F = ':60F:{sign}{date}{currency}{amount}\n'
-
-# closing balance
-FORMAT_62F = ':62F:{sign}{date}{currency}{amount}\n'
-
-# transaction
-FORMAT_61 = ':61:{date}{amount}{magic}\n'
-
-# transaction 2
-FORMAT_86 = ':86:/IBAN/{iban}/NAME/{name}/REMI/{description}\n'
-
-MAGIC = 'NTRFNONREF'
-
-
-class Mt940:
-
-    @staticmethod
-    def make_header(bic):
-        return FORMAT_HEADER.format(
-            bic=bic)
-
-    @staticmethod
-    def make_20(bank, month):
-        return FORMAT_20.format(
-            bank=bank,
-            month=month)
-
-    @staticmethod
-    def make_25(iban, currency):
-        return FORMAT_25.format(
-            iban=iban,
-            currency=currency)
-
-    @staticmethod
-    def make_28c(seqno):
-        return FORMAT_28C.format(
-            seqno=Mt940.pad_5(seqno))
-
-    @staticmethod
-    def make_60f(datetime, balance, currency):
-        return FORMAT_60F.format(
-            sign=Mt940.amount_sign(balance),
-            date=Mt940.date(datetime),
-            currency=currency,
-            amount= Mt940.amount_val(balance))
-
-    @staticmethod
-    def make_62f(datetime, balance, currency):
-        return FORMAT_62F.format(
-            sign=Mt940.amount_sign(balance),
-            date=Mt940.date(datetime),
-            currency=currency,
-            amount= Mt940.amount_val(balance))
-
-    @staticmethod
-    def make_61(datetime, amount):
-        return FORMAT_61.format(
-            date=Mt940.date(datetime),
-            amount=Mt940.amount(amount),
-            magic=MAGIC)
-
-    @staticmethod
-    def make_86(iban, name, description):
-        return FORMAT_86.format(
-            iban=iban,
-            name=name,
-            description=description)
-
-    @staticmethod
-    def pad_5(val):
-        return str(val).zfill(5)
-
-    @staticmethod
-    def amount_sign(val):
-        return 'C' if val > 0 else 'D'
-
-    @staticmethod
-    def amount_val(val):
-        return '{0:.2f}'.format(abs(val)).replace('.', ',')
-
-    @staticmethod
-    def amount(val):
-        return Mt940.amount_sign(val) + Mt940.amount_val(val)
-
-    @staticmethod
-    def date(val, with_year=True):
-        if with_year:
-            return val.strftime('%y%m%d')
-        else:
-            return val.strftime('%m%d')
+    def _balance_line(self, date, balance):
+        sign = 'D' if balance < 0 else 'C'
+        date_str = date.strftime('%y%m%d')
+        amount = f"{abs(balance):.2f}".replace('.', ',')
+        return f"{sign}{date_str}{CURRENCY}{amount}"
