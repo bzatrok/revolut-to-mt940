@@ -18,18 +18,31 @@ This script comes without any warranty whatsoever. Do not use it in production. 
 * Revolut does not export the counterparty IBAN for transactions that you *receive*. As such, the IBAN field in MT940 for credit transactions are usually empty.
 * The export files from Revolut are missing some key data fields when the transaction is still pending (status is not *COMPLETED*). Only export completed transactions.
 
-## Usage
+## Installation
 
-1. Clone the repository.
-2. Make sure you have Python 3.
-3. Run the following command:
-
+```bash
+git clone https://github.com/yourusername/revolut-to-mt940.git
+cd revolut-to-mt940
 ```
+
+## Basic Usage
+
+Export your statement from Revolut as CSV
+Use the conversion script:
+
+```bash
+./convert.sh
+```
+
+Or run manually:
+
+```bash
 python3 main.py \
 	--in /path/to/revolut.csv \
 	--out /path/to/mt.940 \
 	--account-iban <your revolut account IBAN>
 ```
+
 
 ## License
 
