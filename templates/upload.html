@@ -1,0 +1,84 @@
+<!-- templates/upload.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Revolut to MT940 Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Revolut to MT940 Converter</h1>
+        
+        <form method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="iban">Revolut IBAN:</label>
+                <input type="text" id="iban" name="iban" required 
+                       placeholder="e.g., NL20REVO6071787106">
+            </div>
+            
+            <div class="form-group">
+                <label for="file">Revolut CSV File:</label>
+                <input type="file" id="file" name="file" accept=".csv" required>
+            </div>
+            
+            <button type="submit">Convert to MT940</button>
+        </form>
+
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Enter your Revolut IBAN</li>
+                <li>Upload your Revolut CSV export file</li>
+                <li>Click "Convert to MT940"</li>
+                <li>The converted MT940 file will download automatically</li>
+            </ol>
+            <p><strong>Note:</strong> Only completed transactions will be processed. Make sure your CSV export contains all required fields.</p>
+        </div>
+    </div>
+</body>
+</html>

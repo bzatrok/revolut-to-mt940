@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    ports:
+      - "5110:5110"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./output:/app/output
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+    restart: unless-stopped
