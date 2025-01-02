@@ -7,6 +7,5 @@ services:
       - ./uploads:/app/uploads
       - ./output:/app/output
     environment:
-      - FLASK_APP=app.py
-      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
     restart: unless-stopped

@@ -17,12 +17,10 @@ COPY . .
 RUN mkdir -p /app/uploads /app/output
 
 # Set environment variables
-ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
 ENV PYTHONUNBUFFERED=1
 
 # Expose port
-EXPOSE 5110
+EXPOSE 5000
 
-# Run the application
-CMD ["python", "app.py"]
+# Run the application with Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--access-logfile", "-", "app:app"]
