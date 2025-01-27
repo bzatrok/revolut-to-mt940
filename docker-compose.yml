@@ -2,7 +2,7 @@ services:
   web:
     build: .
     ports:
-      - "5110:5110"
+      - "5110:5000"
     volumes:
       - ./uploads:/app/uploads
       - ./output:/app/output
