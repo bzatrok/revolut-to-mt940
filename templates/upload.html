@@ -1,84 +1,797 @@
-<!-- templates/upload.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Revolut to MT940 Converter</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Convert Revolut bank statements to MT940 format for VAT returns. Free online tool for Dutch ZZP entrepreneurs to transform Revolut CSV exports into MT940 files compatible with accounting software.">
+    <meta name="keywords" content="Revolut MT940 converter, ZZP Netherlands, VAT returns, BTW aangifte, Revolut bank statement converter, MT940 format, Dutch accounting, freelancer tools">
+    <title>Revolut to MT940 Converter - VAT Returns for Dutch ZZP | Free Online Tool</title>
+    
+    <!-- 100% privacy-first analytics -->
+    <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+    <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerPolicy="no-referrer-when-downgrade"/></noscript>
+    
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #FFF5E6 0%, #FFE4CC 25%, #FFD4B3 50%, #FFC299 75%, #FFB380 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
+            color: #2C3E50;
         }
-        .container {
-            background: #f5f5f5;
+        
+        .main-container {
+            width: 100%;
+            max-width: 520px;
+        }
+        
+        .form-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FF9A56, #FF6B6B, #FF9A56);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1A1A1A;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #6C757D;
+            margin-bottom: 32px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .form-step {
+            margin-bottom: 24px;
+            position: relative;
+        }
+        
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #FF9A56, #FF6B6B);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .step-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #E9ECEF;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #FAFBFC;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #FF9A56;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(255, 154, 86, 0.1);
+        }
+        
+        input[type="text"].valid {
+            border-color: #10B981;
+            background: #F0FDF4;
+        }
+        
+        input[type="text"].error {
+            border-color: #DC3545;
+            background: #FFF5F5;
+        }
+        
+        .file-upload-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        
+        .file-upload-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 60px;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: #FAFBFC;
+            border: 2px dashed #DEE2E6;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease, border-color 0.3s ease;
+            position: relative;
         }
-        .form-group {
-            margin-bottom: 15px;
+        
+        .file-upload-button:hover:not(.has-file) {
+            background: white;
+            border-color: #FF9A56;
+            border-style: solid;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
+        
+        .file-upload-button.has-file {
+            background: #F0FDF4;
+            border-color: #10B981;
+            border-style: solid;
+            padding-right: 50px;
+        }
+        
+        .delete-file {
+            position: absolute;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            background: #EF4444;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .delete-file:hover {
+            background: #DC2626;
+        }
+        
+        .file-upload-button.has-file .delete-file {
+            display: flex;
+        }
+        
+        .delete-file svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
+        }
+        
+        input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .upload-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            fill: #6C757D;
+        }
+        
+        .file-info {
+            color: #6C757D;
+            font-size: 14px;
+        }
+        
+        .file-info.success {
+            color: #10B981;
+            font-weight: 500;
+        }
+        
+        .error-message {
+            color: #DC3545;
+            font-size: 13px;
+            margin-top: 6px;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+        
+        .error-message.show {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 50px;
+        }
+        
+        .submit-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #FF9A56, #FF6B6B);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 154, 86, 0.3);
+        }
+        
+        .submit-button:disabled {
+            background: #E5E7EB;
+            color: #9CA3AF;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .submit-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(2px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .loading-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 320px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .loading-overlay.show .loading-card {
+            transform: scale(1);
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #E5E7EB;
+            border-top-color: #FF9A56;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        .loading-text {
+            color: #495057;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .loading-subtext {
+            color: #6C757D;
+            font-size: 14px;
+        }
+        
+        .info-section {
+            margin-top: 32px;
+            padding: 20px;
+            background: linear-gradient(135deg, #FFF9F5, #FFF5ED);
+            border-radius: 12px;
+            border: 1px solid #FFE4D6;
+        }
+        
+        .info-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #495057;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            fill: #FF9A56;
+        }
+        
+        .info-list {
+            list-style: none;
+            font-size: 13px;
+            color: #6C757D;
+            line-height: 1.8;
+        }
+        
+        .info-list li {
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .info-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10B981;
             font-weight: bold;
         }
-        input[type="text"], input[type="file"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        
+        .seo-content {
+            margin-top: 24px;
+            padding: 16px;
+            background: #F8F9FA;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #6C757D;
+            line-height: 1.6;
         }
-        button {
-            background: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        
+        .seo-content h2 {
+            font-size: 14px;
+            color: #495057;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
-        button:hover {
-            background: #0056b3;
+        
+        
+        .error-banner {
+            background: #FEE2E2;
+            border: 1px solid #FCA5A5;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: start;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            max-height: 0;
+            overflow: hidden;
         }
-        .instructions {
-            margin-top: 20px;
-            padding: 15px;
-            background: #e9ecef;
-            border-radius: 4px;
+        
+        .error-banner.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            max-height: 200px;
+        }
+        
+        .error-icon {
+            width: 20px;
+            height: 20px;
+            fill: #DC2626;
+            flex-shrink: 0;
+            margin-right: 12px;
+            margin-top: 2px;
+        }
+        
+        .error-content {
+            flex: 1;
+        }
+        
+        .error-title {
+            color: #991B1B;
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        
+        .error-text {
+            color: #7F1D1D;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 640px) {
+            .form-card {
+                padding: 24px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Revolut to MT940 Converter</h1>
-        
-        <form method="post" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="iban">Revolut IBAN:</label>
-                <input type="text" id="iban" name="iban" required 
-                       placeholder="e.g., NL20REVO6071787106">
+    <div class="main-container">
+        <div class="form-card">
+            <h1>Revolut → MT940 Converter</h1>
+            <p class="subtitle">Transform your Revolut statements for seamless VAT returns</p>
+            
+            <div class="error-banner" id="errorBanner">
+                <svg class="error-icon" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+                <div class="error-content">
+                    <div class="error-title">Conversion Failed</div>
+                    <div class="error-text" id="errorText">An error occurred while processing your file.</div>
+                </div>
             </div>
             
-            <div class="form-group">
-                <label for="file">Revolut CSV File:</label>
-                <input type="file" id="file" name="file" accept=".csv" required>
+            <form method="post" enctype="multipart/form-data" id="converterForm">
+                <div class="form-step">
+                    <div class="step-indicator">
+                        <div class="step-number">1</div>
+                        <label class="step-label" for="iban">Enter your Revolut IBAN</label>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="text" 
+                               id="iban" 
+                               name="iban" 
+                               required 
+                               placeholder="NL20REVO6071787106"
+                               pattern="^[A-Z]{2}[0-9]{2}REVO[0-9]{10}$"
+                               title="Please enter a valid Revolut IBAN">
+                        <div class="error-message" id="ibanError">Please enter a valid Revolut IBAN (e.g., NL20REVO6071787106)</div>
+                    </div>
+                </div>
+                
+                <div class="form-step">
+                    <div class="step-indicator">
+                        <div class="step-number">2</div>
+                        <label class="step-label" for="file">Upload Revolut CSV statement</label>
+                    </div>
+                    <div class="file-upload-wrapper">
+                        <label for="file" class="file-upload-button" id="fileLabel">
+                            <svg class="upload-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="none" style="display:none" id="checkIcon" />
+                                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12,12L8,16H10.5V19H13.5V16H16L12,12Z" fill="currentColor" id="uploadIcon" />
+                            </svg>
+                            <span class="file-info" id="fileInfo">Choose CSV file or drag & drop</span>
+                            <div class="delete-file" id="deleteFile" onclick="event.preventDefault(); event.stopPropagation(); clearFile();">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                                </svg>
+                            </div>
+                        </label>
+                        <input type="file" id="file" name="file" accept=".csv" required>
+                        <div class="error-message" id="fileError">Please select a CSV file</div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-button" id="submitBtn" disabled>
+                    Convert to MT940 Format
+                </button>
+            </form>
+            
+            <div class="info-section">
+                <div class="info-title">
+                    <svg class="info-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                    Quick Guide
+                </div>
+                <ul class="info-list">
+                    <li>Export your transactions from Revolut as CSV</li>
+                    <li>Enter your business Revolut IBAN</li>
+                    <li>Upload the CSV file</li>
+                    <li>MT940 file downloads automatically</li>
+                    <li>Import into your accounting software</li>
+                </ul>
             </div>
             
-            <button type="submit">Convert to MT940</button>
-        </form>
-
-        <div class="instructions">
-            <h3>Instructions:</h3>
-            <ol>
-                <li>Enter your Revolut IBAN</li>
-                <li>Upload your Revolut CSV export file</li>
-                <li>Click "Convert to MT940"</li>
-                <li>The converted MT940 file will download automatically</li>
-            </ol>
-            <p><strong>Note:</strong> Only completed transactions will be processed. Make sure your CSV export contains all required fields.</p>
+            <div class="seo-content">
+                <h2>About This Tool</h2>
+                <p>This free online converter helps Dutch ZZP entrepreneurs and freelancers convert Revolut bank statements to MT940 format for quarterly VAT returns (BTW aangifte). Compatible with popular Dutch accounting software including Exact Online, Moneybird, and e-Boekhouden.nl. Simply upload your Revolut CSV export and get an MT940 file ready for your bookkeeping. Perfect for Netherlands-based self-employed professionals using Revolut Business accounts.</p>
+            </div>
         </div>
     </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-card">
+            <div class="spinner"></div>
+            <div class="loading-text">Converting to MT940</div>
+            <div class="loading-subtext">Processing your Revolut transactions...</div>
+        </div>
+    </div>
+    
+    <script>
+        // Form validation and UX enhancements
+        const form = document.getElementById('converterForm');
+        const ibanInput = document.getElementById('iban');
+        const fileInput = document.getElementById('file');
+        const fileLabel = document.getElementById('fileLabel');
+        const fileInfo = document.getElementById('fileInfo');
+        const submitBtn = document.getElementById('submitBtn');
+        const ibanError = document.getElementById('ibanError');
+        const fileError = document.getElementById('fileError');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const errorBanner = document.getElementById('errorBanner');
+        const errorText = document.getElementById('errorText');
+        
+        // Clear file function
+        function clearFile() {
+            fileInput.value = '';
+            fileInfo.textContent = 'Choose CSV file or drag & drop';
+            fileInfo.classList.remove('success');
+            fileLabel.classList.remove('has-file');
+            document.getElementById('uploadIcon').style.display = 'block';
+            document.getElementById('checkIcon').style.display = 'none';
+            fileError.classList.remove('show');
+            checkFormValidity();
+        }
+        
+        // Show error function
+        function showError(message) {
+            errorText.textContent = message;
+            errorBanner.classList.add('show');
+            errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        // Hide error function
+        function hideError() {
+            errorBanner.classList.remove('show');
+        }
+        
+        // Download file from blob
+        function downloadFile(blob, filename) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+        
+        // Check form validity and update button state
+        function checkFormValidity() {
+            const ibanValid = /^[A-Z]{2}[0-9]{2}REVO[0-9]{10}$/.test(ibanInput.value);
+            const fileValid = fileInput.files && fileInput.files[0] && fileInput.files[0].name.toLowerCase().endsWith('.csv');
+            
+            if (ibanValid && fileValid) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+        
+        // IBAN validation
+        ibanInput.addEventListener('input', function() {
+            const value = this.value.toUpperCase();
+            this.value = value;
+            
+            // Hide error banner when user starts typing
+            hideError();
+            
+            if (value.length > 0) {
+                const isValid = /^[A-Z]{2}[0-9]{2}REVO[0-9]{10}$/.test(value);
+                if (isValid) {
+                    this.classList.remove('error');
+                    this.classList.add('valid');
+                    ibanError.classList.remove('show');
+                } else if (value.length >= 18) {
+                    this.classList.add('error');
+                    this.classList.remove('valid');
+                    ibanError.classList.add('show');
+                } else {
+                    this.classList.remove('error');
+                    this.classList.remove('valid');
+                    ibanError.classList.remove('show');
+                }
+            } else {
+                this.classList.remove('error');
+                this.classList.remove('valid');
+                ibanError.classList.remove('show');
+            }
+            
+            checkFormValidity();
+        });
+        
+        // File upload handling
+        fileInput.addEventListener('change', function() {
+            // Hide error banner when user uploads a new file
+            hideError();
+            
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const fileName = file.name;
+                const fileSize = (file.size / 1024).toFixed(1);
+                
+                if (fileName.toLowerCase().endsWith('.csv')) {
+                    fileInfo.textContent = `${fileName} (${fileSize} KB)`;
+                    fileInfo.classList.add('success');
+                    fileLabel.classList.add('has-file');
+                    fileError.classList.remove('show');
+                    
+                    // Change icon to checkmark
+                    document.getElementById('uploadIcon').style.display = 'none';
+                    document.getElementById('checkIcon').style.display = 'block';
+                    document.getElementById('checkIcon').setAttribute('fill', '#10B981');
+                } else {
+                    fileInfo.textContent = 'Please select a CSV file';
+                    fileInfo.classList.remove('success');
+                    fileLabel.classList.remove('has-file');
+                    fileError.classList.add('show');
+                    this.value = '';
+                    
+                    // Reset icon
+                    document.getElementById('uploadIcon').style.display = 'block';
+                    document.getElementById('checkIcon').style.display = 'none';
+                }
+            } else {
+                fileInfo.textContent = 'Choose CSV file or drag & drop';
+                fileInfo.classList.remove('success');
+                fileLabel.classList.remove('has-file');
+                document.getElementById('uploadIcon').style.display = 'block';
+                document.getElementById('checkIcon').style.display = 'none';
+            }
+            
+            checkFormValidity();
+        });
+        
+        // Drag and drop support
+        fileLabel.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            if (!this.classList.contains('has-file')) {
+                this.style.borderColor = '#FF9A56';
+                this.style.borderStyle = 'solid';
+                this.style.background = 'white';
+            }
+        });
+        
+        fileLabel.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            if (!this.classList.contains('has-file')) {
+                this.style.borderColor = '#DEE2E6';
+                this.style.borderStyle = 'dashed';
+                this.style.background = '#FAFBFC';
+            }
+        });
+        
+        fileLabel.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (!this.classList.contains('has-file')) {
+                this.style.borderColor = '#DEE2E6';
+                this.style.borderStyle = 'dashed';
+                this.style.background = '#FAFBFC';
+            }
+            
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                fileInput.files = e.dataTransfer.files;
+                const event = new Event('change', { bubbles: true });
+                fileInput.dispatchEvent(event);
+            }
+        });
+        
+        // Form submission with AJAX
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Hide any previous errors
+            hideError();
+            
+            let isValid = true;
+            
+            // Validate IBAN
+            if (!ibanInput.value || !/^[A-Z]{2}[0-9]{2}REVO[0-9]{10}$/.test(ibanInput.value)) {
+                ibanInput.classList.add('error');
+                ibanError.classList.add('show');
+                isValid = false;
+            }
+            
+            // Validate file
+            if (!fileInput.files || !fileInput.files[0]) {
+                fileError.classList.add('show');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                return;
+            }
+            
+            // Show loading state
+            loadingOverlay.classList.add('show');
+            submitBtn.disabled = true;
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('iban', ibanInput.value);
+                
+                const response = await fetch('/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    // Check if response is JSON (error) or file (success)
+                    const contentType = response.headers.get('content-type');
+                    
+                    if (contentType && contentType.includes('application/json')) {
+                        // It's an error response
+                        const errorData = await response.json();
+                        showError(errorData.error);
+                    } else {
+                        // It's a file download
+                        const blob = await response.blob();
+                        const filename = response.headers.get('content-disposition')
+                            ?.split('filename=')[1]?.replace(/"/g, '') || 'converted.mt940';
+                        downloadFile(blob, filename);
+                    }
+                } else {
+                    // Handle HTTP errors
+                    try {
+                        const errorData = await response.json();
+                        showError(errorData.error || 'An error occurred during conversion');
+                    } catch {
+                        showError('Server error: Please try again later');
+                    }
+                }
+            } catch (error) {
+                showError('Network error: Please check your connection and try again');
+            } finally {
+                // Hide loading state
+                loadingOverlay.classList.remove('show');
+                checkFormValidity();
+            }
+        });
+    </script>
 </body>
 </html>
